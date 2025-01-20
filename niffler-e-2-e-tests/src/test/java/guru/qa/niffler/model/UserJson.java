@@ -32,8 +32,8 @@ public record UserJson(
     @JsonProperty("photoSmall")
     String photoSmall,
 
-    @JsonProperty("auth")
-    AuthUserJson authUserJson
+    @JsonProperty("friendState")
+    FriendState friendState
 
 ) {
 
@@ -47,11 +47,11 @@ public record UserJson(
                 null,
                 null,
                 null,
-                AuthUserJson.fromEntity(aue)
+                null
         );
     }
 
-    public static UserJson fromEntity(UserEntity ue) {
+    public static UserJson fromEntity(UserEntity ue, FriendState friendState) {
         return new UserJson(
                 ue.getId(),
                 ue.getUsername(),
@@ -61,7 +61,7 @@ public record UserJson(
                 ue.getCurrency(),
                 ue.getPhoto() != null && ue.getPhoto().length > 0 ? new String(ue.getPhoto(), StandardCharsets.UTF_8) : null,
                 ue.getPhotoSmall() != null && ue.getPhotoSmall().length > 0 ? new String(ue.getPhotoSmall(), StandardCharsets.UTF_8) : null,
-                null
+                friendState
         );
     }
 }

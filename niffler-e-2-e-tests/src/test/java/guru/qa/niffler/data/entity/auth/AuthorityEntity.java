@@ -14,6 +14,6 @@ public class AuthorityEntity implements Serializable {
 
     private Authority authority;
 
-    private AuthUserEntity user;
+    private UUID userId;
 
 }

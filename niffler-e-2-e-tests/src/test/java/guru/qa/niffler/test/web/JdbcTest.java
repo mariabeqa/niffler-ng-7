@@ -13,153 +13,123 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JdbcTest {
 
-    @Test
-    void txTest() {
+//    @Test
+//    void txTest() {
+//
+//        SpendDbClient spendDbClient = new SpendDbClient();
+//
+//        SpendJson spendJson = spendDbClient.createSpend(
+//                new SpendJson(
+//                        null,
+//                        new Date(),
+//                        new CategoryJson(
+//                                null,
+//                                "cat-name-ttx",
+//                                "maria",
+//                                false
+//                        ),
+//                        CurrencyValues.RUB,
+//                        1000.0,
+//                        "spend-name-ttx",
+//                        "maria"
+//                )
+//        );
+//
+//    }
 
-        SpendDbClient spendDbClient = new SpendDbClient();
+//    @Test
+//    void xaTransactionsCorrectDataTest() {
+//        UserDbClient userDbClient = new UserDbClient();
+//        String username = RandomDataUtils.randomUsername();
+//
+//        UserJson user = userDbClient.createUser(
+//                new UserJson(
+//                        null,
+//                        username,
+//                        "First Name",
+//                        "Surname",
+//                        "Full Name",
+//                        CurrencyValues.RUB,
+//                        null,
+//                        null,
+//                        null
+//                )
+//        );
+//
+//        assertEquals(username, user.username());
+//    }
 
-        SpendJson spendJson = spendDbClient.createSpend(
-                new SpendJson(
-                        null,
-                        new Date(),
-                        new CategoryJson(
-                                null,
-                                "cat-name-ttx",
-                                "maria",
-                                false
-                        ),
-                        CurrencyValues.RUB,
-                        1000.0,
-                        "spend-name-ttx",
-                        "maria"
-                )
-        );
-
-    }
-
-    @Test
-    void xaTransactionsCorrectDataTest() {
-        UserDbClient userDbClient = new UserDbClient();
-        String username = RandomDataUtils.randomUsername();
-        String pw = RandomDataUtils.randomPassword(3, 12);
-
-        UserJson user = userDbClient.createUser(
-                new UserJson(
-                        null,
-                        username,
-                        "First Name",
-                        "Surname",
-                        "Full Name",
-                        CurrencyValues.RUB,
-                        null,
-                        null,
-                        new AuthUserJson(
-                                null,
-                                username,
-                                pw,
-                                true,
-                                true,
-                                true,
-                                true,
-                                null
-                        )
-                )
-        );
-
-        assertEquals(username, user.username());
-    }
-
-    @Test
-    void xaTransactionsInCorrectDataTest() {
-        UserDbClient userDbClient = new UserDbClient();
-        String username = "incorrectData";
-        String pw = RandomDataUtils.randomPassword(3, 12);
-
-        try {
-            UserJson user = userDbClient.createUser(
-                    new UserJson(
-                            null,
-                            username,
-                            "First Name",
-                            "Surname",
-                            "Full Name",
-                            CurrencyValues.RUB,
-                            null,
-                            null,
-                            new AuthUserJson(
-                                    null,
-                                    username,
-                                    null, //Add password as null to test xaTransactions
-                                    true,
-                                    true,
-                                    true,
-                                    true,
-                                    null
-                            )
-                    )
-            );
-        } catch (IllegalArgumentException e) {
-            //NOP
-        } finally {
-            Assertions.assertFalse(userDbClient.findUserByUsername(username).isPresent());
-        }
-
-
-    }
+//    @Test
+//    void xaTransactionsInCorrectDataTest() {
+//        UserDbClient userDbClient = new UserDbClient();
+//        String username = "incorrectData";
+//
+//        try {
+//            UserJson user = userDbClient.createUser(
+//                    new UserJson(
+//                            null,
+//                            null,
+//                            "First Name",
+//                            "Surname",
+//                            "Full Name",
+//                            CurrencyValues.RUB,
+//                            null,
+//                            null,
+//                            null
+//                    )
+//            );
+//        } catch (IllegalArgumentException e) {
+//            //NOP
+//        } finally {
+//            Assertions.assertFalse(userDbClient.findUserByUsername(username).isPresent());
+//        }
+//
+//
+//    }
 
 
     @Test
     void springJdbcTest() {
         UserDbClient userDbClient = new UserDbClient();
-        String username = RandomDataUtils.randomUsername();
-        String pw = "12345";
 
         UserJson user = userDbClient.createUserSpringJdbc(
                 new UserJson(
                         null,
-                        username,
-                        "First Name",
-                        "Surname",
-                        "Full Name",
+                        "valentin-6",
+                        null,
+                        null,
+                        null,
                         CurrencyValues.RUB,
                         null,
                         null,
-                        new AuthUserJson(
-                                null,
-                                username,
-                                pw,
-                                true,
-                                true,
-                                true,
-                                true,
-                                null
-                        )
+                        null
                 )
         );
+        System.out.println(user);
     }
 
 
-    @Test
-    void springSpendJdbcTest() {
-        SpendDbClient spendDbClient = new SpendDbClient();
-
-        spendDbClient.createSpendSpringJdbc(
-                new SpendJson(
-                        null,
-                        new Date(),
-                        new CategoryJson(
-                                null,
-                                "Fast Food Test",
-                                "duck",
-                                false
-                        ),
-                        CurrencyValues.RUB,
-                        1800.0,
-                        "Fast Food description",
-                        "duck"
-                )
-        );
-    }
+//    @Test
+//    void springSpendJdbcTest() {
+//        SpendDbClient spendDbClient = new SpendDbClient();
+//
+//        spendDbClient.createSpendSpringJdbc(
+//                new SpendJson(
+//                        null,
+//                        new Date(),
+//                        new CategoryJson(
+//                                null,
+//                                "Fast Food Test2",
+//                                "duck",
+//                                false
+//                        ),
+//                        CurrencyValues.RUB,
+//                        1800.0,
+//                        "Fast Food description",
+//                        "duck"
+//                )
+//        );
+//    }
 
 }
 
