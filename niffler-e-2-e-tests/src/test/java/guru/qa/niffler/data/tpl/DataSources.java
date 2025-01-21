@@ -2,18 +2,20 @@ package guru.qa.niffler.data.tpl;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.ds.PGSimpleDataSource;
 
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DataSources {
+public class  DataSources {
     private DataSources() {
 
     }
 
     private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
+    private static final Map<String, DataSource> testDataSources = new ConcurrentHashMap<>();
 
     public static DataSource dataSource(String jdbcUrl) {
         return dataSources.computeIfAbsent(
@@ -31,6 +33,21 @@ public class DataSources {
                     dsBean.setPoolSize(3);
                     dsBean.setMaxPoolSize(10);
                     return dsBean;
+                }
+        );
+    }
+
+    //метод для получения DataSource, чтобы протестировать ChainedTransactionManager
+    //вместо Atomikos
+    public static DataSource testDataSource(String jdbcUrl) {
+        return testDataSources.computeIfAbsent(
+                jdbcUrl,
+                key -> {
+                    PGSimpleDataSource ds = new PGSimpleDataSource();
+                    ds.setUser("postgres");
+                    ds.setPassword("secret");
+                    ds.setUrl(key);
+                    return ds;
                 }
         );
     }

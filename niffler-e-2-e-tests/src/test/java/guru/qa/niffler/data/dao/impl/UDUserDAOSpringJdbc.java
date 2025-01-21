@@ -62,7 +62,15 @@ public class UDUserDAOSpringJdbc implements UDUserDAO {
 
     @Override
     public Optional<UserEntity> findByUsername(String username) {
-        return Optional.empty();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.userdataJdbcUrl()));
+
+        return Optional.ofNullable(
+                jdbcTemplate.queryForObject(
+                        "SELECT * FROM \"user\" WHERE username = ?",
+                        UdUserEntityRowMapper.INSTANCE,
+                        username
+                )
+        );
     }
 
     @Override

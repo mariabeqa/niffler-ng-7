@@ -22,7 +22,7 @@ public class AuthAuthorityDAOSpringJdbc implements AuthAuthorityDAO {
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setObject(1, authority[i].getId());
+                        ps.setObject(1, authority[i].getUserId());
                         ps.setString(2, authority[i].getAuthority().name());
                     }
 
