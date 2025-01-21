@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class  DataSources {
+public class DataSources {
     private DataSources() {
 
     }

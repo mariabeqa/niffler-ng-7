@@ -11,7 +11,7 @@ import java.util.List;
 
 import static guru.qa.niffler.data.tpl.Connections.holder;
 
-public class  AuthAuthorityDAOJdbc implements AuthAuthorityDAO {
+public class AuthAuthorityDAOJdbc implements AuthAuthorityDAO {
 
     private static final Config CFG = Config.getInstance();
 
