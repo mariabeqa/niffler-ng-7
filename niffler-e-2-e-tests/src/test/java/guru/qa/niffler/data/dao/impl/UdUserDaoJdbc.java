@@ -2,6 +2,8 @@ package guru.qa.niffler.data.dao.impl;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.UdUserDao;
+import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
+import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserEntity;
 import guru.qa.niffler.model.CurrencyValues;
 
@@ -23,10 +25,16 @@ public class UdUserDaoJdbc implements UdUserDao {
   @Override
   public UserEntity create(UserEntity user) {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
-        "INSERT INTO \"user\" (username, currency) VALUES (?, ?)",
+            "INSERT INTO \"user\" (username, currency, firstname, surname, photo, photo_small, full_name) " +
+                    "VALUES (?,?,?,?,?,?,?)",
         PreparedStatement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, user.getUsername());
       ps.setString(2, user.getCurrency().name());
+      ps.setString(3, user.getFirstname());
+      ps.setString(4, user.getSurname());
+      ps.setBytes(5, user.getPhoto());
+      ps.setBytes(6, user.getPhotoSmall());
+      ps.setString(7, user.getFullname());
       ps.executeUpdate();
       final UUID generatedUserId;
       try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -44,9 +52,94 @@ public class UdUserDaoJdbc implements UdUserDao {
   }
 
   @Override
+  public UserEntity update(UserEntity user) {
+    try (PreparedStatement userPs = holder(url).connection().prepareStatement(
+            "UPDATE \"user\" SET " +
+                    "username = ?, " +
+                    "currency = ?, " +
+                    "firstname = ?, " +
+                    "surname = ?, " +
+                    "photo = ?, " +
+                    "photo_small = ?, " +
+                    "full_name = ? " +
+                    "WHERE id = ?");
+         PreparedStatement friendshipPs = holder(url).connection().prepareStatement(
+                 "INSERT INTO friendship (requester_id, addressee_id, status) " +
+                         "VALUES (?, ?, ?) " +
+                         "ON CONFLICT (requester_id, addressee_id) " +
+                         "DO UPDATE SET status = ?"
+         )
+
+    ) {
+      userPs.setString(1, user.getUsername());
+      userPs.setString(2, user.getCurrency().name());
+      userPs.setString(3, user.getFirstname());
+      userPs.setString(4, user.getSurname());
+      userPs.setBytes(5, user.getPhoto());
+      userPs.setBytes(6, user.getPhotoSmall());
+      userPs.setString(7, user.getFullname());
+      userPs.setObject(8, user.getId());
+      userPs.executeUpdate();
+
+      for (FriendshipEntity f : user.getFriendshipRequests()) {
+        friendshipPs.setObject(1, f.getRequester().getId());
+        friendshipPs.setObject(2, f.getAddressee().getId());
+        friendshipPs.setString(3, f.getStatus().name());
+        friendshipPs.setString(4, f.getStatus().name());
+        friendshipPs.addBatch();
+        friendshipPs.clearParameters();
+      }
+
+      for (FriendshipEntity f : user.getFriendshipAddressees()) {
+        friendshipPs.setObject(1, f.getRequester().getId());
+        friendshipPs.setObject(2, f.getAddressee().getId());
+        friendshipPs.setString(3, f.getStatus().name());
+        friendshipPs.setString(4, f.getStatus().name());
+        friendshipPs.addBatch();
+        friendshipPs.clearParameters();
+      }
+      friendshipPs.executeBatch();
+
+      return user;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public Optional<UserEntity> findById(UUID id) {
-    try (PreparedStatement ps = holder(url).connection().prepareStatement("SELECT * FROM \"user\" WHERE id = ? ")) {
+    try (PreparedStatement ps = holder(url).connection().prepareStatement(
+            "SELECT * FROM \"user\" WHERE id = ? "
+    )) {
       ps.setObject(1, id);
+
+      ps.execute();
+      ResultSet rs = ps.getResultSet();
+
+      if (rs.next()) {
+        UserEntity result = new UserEntity();
+        result.setId(rs.getObject("id", UUID.class));
+        result.setUsername(rs.getString("username"));
+        result.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
+        result.setFirstname(rs.getString("firstname"));
+        result.setSurname(rs.getString("surname"));
+        result.setPhoto(rs.getBytes("photo"));
+        result.setPhotoSmall(rs.getBytes("photo_small"));
+        return Optional.of(result);
+      } else {
+        return Optional.empty();
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public Optional<UserEntity> findByUsername(String username) {
+    try (PreparedStatement ps = holder(url).connection().prepareStatement(
+            "SELECT * FROM \"user\" WHERE username = ?"
+    )) {
+      ps.setObject(1, username);
 
       ps.execute();
       ResultSet rs = ps.getResultSet();
@@ -94,4 +187,56 @@ public class UdUserDaoJdbc implements UdUserDao {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public void remove(UserEntity user) {
+    try (   PreparedStatement fPs = holder(url).connection().prepareStatement(
+            "DELETE FROM friendship WHERE requester_id = ? OR addressee_id = ?"
+            );
+            PreparedStatement userPs = holder(url).connection().prepareStatement(
+            "DELETE FROM \"user\" WHERE id = ?")) {
+
+      fPs.setObject(1, user.getId());
+      fPs.setObject(2, user.getId());
+      fPs.executeUpdate();
+
+      userPs.setObject(1, user.getId());
+      userPs.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public List<FriendshipEntity> findInvitationByRequesterId(UUID requesterId) {
+    try( PreparedStatement ps = holder(url).connection().prepareStatement(
+            "SELECT * FROM friendship f " +
+                    "LEFT JOIN \"user\" u ON f.requester_id = u.id " +
+                    "WHERE f.requester_id = ?"
+    )) {
+      ps.setObject(1, requesterId);
+      ps.execute();
+
+      List<FriendshipEntity> result = new ArrayList<>();
+      try (ResultSet rs = ps.getResultSet()) {
+        while (rs.next()) {
+          FriendshipEntity fe = new FriendshipEntity();
+          UserEntity requester = new UserEntity();
+          requester.setId(requesterId);
+          fe.setRequester(requester);
+          UserEntity addressee = new UserEntity();
+          addressee.setId(rs.getObject("addressee_id", UUID.class));
+          fe.setAddressee(addressee);
+          fe.setStatus(FriendshipStatus.valueOf(rs.getString("status")));
+          fe.setCreatedDate(rs.getTimestamp("created_date"));
+          result.add(fe);
+        }
+      }
+      return result;
+    } catch (SQLException e) {
+        throw new RuntimeException(e);
+    }
+  }
+
 }

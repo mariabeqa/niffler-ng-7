@@ -1,18 +1,20 @@
 package guru.qa.niffler.data.repository.impl;
 
 import guru.qa.niffler.config.Config;
+import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
 import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserEntity;
-import guru.qa.niffler.data.repository.UDUserRepository;
+import guru.qa.niffler.data.repository.UserDataUserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static guru.qa.niffler.data.jpa.EntityManagers.em;
 
-public class UDUserRepositoryHibernate implements UDUserRepository {
+public class UserDataUserRepositoryHibernate implements UserDataUserRepository {
 
   private static final Config CFG = Config.getInstance();
   private final EntityManager entityManager = em(CFG.userdataJdbcUrl());
@@ -41,13 +43,14 @@ public class UDUserRepositoryHibernate implements UDUserRepository {
   }
 
   @Override
-  public void addIncomeInvitation(UserEntity requester, UserEntity addressee) {
+  public UserEntity update(UserEntity user) {
     entityManager.joinTransaction();
-    addressee.addFriends(FriendshipStatus.PENDING, requester);
+    entityManager.merge(user);
+    return user;
   }
 
   @Override
-  public void addOutcomeInvitation(UserEntity requester, UserEntity addressee) {
+  public void sendInvitation(UserEntity requester, UserEntity addressee) {
     entityManager.joinTransaction();
     requester.addFriends(FriendshipStatus.PENDING, addressee);
   }
@@ -58,4 +61,25 @@ public class UDUserRepositoryHibernate implements UDUserRepository {
     requester.addFriends(FriendshipStatus.ACCEPTED, addressee);
     addressee.addFriends(FriendshipStatus.ACCEPTED, requester);
   }
+
+  @Override
+  public void remove(UserEntity user) {
+    entityManager.joinTransaction();
+    entityManager.remove(user);
+  }
+
+  @Override
+  public List<FriendshipEntity> findInvitationByRequesterId(UUID requesterId) {
+    try {
+      return entityManager.createQuery(
+              "select f from FriendshipEntity f where f.requester.id =: id",
+                      FriendshipEntity.class
+              )
+              .setParameter("id", requesterId)
+              .getResultList();
+    } catch (NoResultException e) {
+      return List.of();
+    }
+  }
+
 }

@@ -5,6 +5,7 @@ import guru.qa.niffler.data.dao.CategoryDao;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.mapper.CategoryEntityRowMapper;
 import guru.qa.niffler.data.tpl.DataSources;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -42,15 +43,39 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
   }
 
   @Override
+  public void update(CategoryEntity category) {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
+    jdbcTemplate.update(con -> {
+      PreparedStatement ps = con.prepareStatement(
+              "UPDATE category SET " +
+                      "name = ?, " +
+                      "username = ?, " +
+                      "archived = ? " +
+                      "WHERE id = ?"
+      );
+      ps.setString(1, category.getName());
+      ps.setString(2, category.getUsername());
+      ps.setBoolean(3, category.isArchived());
+      ps.setObject(4, category.getId());
+
+      return ps;
+    });
+  }
+
+  @Override
   public Optional<CategoryEntity> findCategoryById(UUID id) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
-    return Optional.ofNullable(
-        jdbcTemplate.queryForObject(
-            "SELECT * FROM \"category\" WHERE id = ?",
-            CategoryEntityRowMapper.instance,
-            id
-        )
-    );
+    try {
+      return Optional.ofNullable(
+              jdbcTemplate.queryForObject(
+                      "SELECT * FROM \"category\" WHERE id = ?",
+                      CategoryEntityRowMapper.instance,
+                      id
+              )
+      );
+    } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -61,4 +86,28 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
         CategoryEntityRowMapper.instance
     );
   }
+
+  @Override
+  public Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String name) {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
+    try {
+      return Optional.ofNullable(
+              jdbcTemplate.queryForObject(
+                      "SELECT * FROM category WHERE username = ? AND name = ?",
+                      CategoryEntityRowMapper.instance,
+                      username,
+                      name
+              )
+      );
+    } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public void removeCategory(CategoryEntity category) {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
+    jdbcTemplate.update("DELETE FROM category WHERE id = ?", category.getId());
+  }
+
 }

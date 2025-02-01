@@ -8,6 +8,10 @@ public interface AuthAuthorityDao {
 
   void create(AuthorityEntity... authority);
 
+  List<AuthorityEntity> update(AuthorityEntity... authority);
+
   List<AuthorityEntity> findAll();
+
+  void remove(AuthorityEntity... authority);
 
 }

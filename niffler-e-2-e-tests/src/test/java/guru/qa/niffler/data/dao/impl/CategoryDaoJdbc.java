@@ -3,6 +3,7 @@ package guru.qa.niffler.data.dao.impl;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.CategoryDao;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
+import guru.qa.niffler.data.mapper.CategoryEntityRowMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,6 +47,26 @@ public class CategoryDaoJdbc implements CategoryDao {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void update(CategoryEntity category) {
+      try (PreparedStatement ps = holder(url).connection().prepareStatement(
+              "UPDATE category SET " +
+                      "name = ?, " +
+                      "username = ?, " +
+                      "archived = ? " +
+                      "WHERE id = ?"
+      )) {
+        ps.setString(1, category.getName());
+        ps.setString(2, category.getUsername());
+        ps.setBoolean(3, category.isArchived());
+        ps.setObject(4, category.getId());
+        ps.executeUpdate();
+
+      } catch (SQLException e) {
+          throw new RuntimeException(e);
+      }
   }
 
   @Override
@@ -93,4 +114,40 @@ public class CategoryDaoJdbc implements CategoryDao {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String name) {
+    try (PreparedStatement ps = holder(url).connection().prepareStatement(
+            "SELECT * FROM category WHERE username = ? AND name = ?"
+    )) {
+      ps.setString(1, username);
+      ps.setString(2, name);
+      ps.execute();
+
+      try (ResultSet rs = ps.getResultSet()) {
+        if (rs.next()) {
+          CategoryEntity ce =
+                  CategoryEntityRowMapper.instance.mapRow(rs, rs.getRow());
+          return Optional.ofNullable(ce);
+        } else {
+          return Optional.empty();
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void removeCategory(CategoryEntity category) {
+    try (PreparedStatement ps = holder(url).connection().prepareStatement(
+            "DELETE FROM category WHERE id = ?")) {
+      ps.setObject(1, category.getId());
+      ps.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }
