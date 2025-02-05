@@ -2,7 +2,9 @@ package guru.qa.niffler.page;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import org.openqa.selenium.By;
 
+import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
@@ -14,6 +16,7 @@ public class MainPage {
   private final ElementsCollection tableRows = $("#spendings tbody").$$("tr");
   private final SelenideElement statComponent = $("#stat");
   private final SelenideElement spendingTable = $("#spendings");
+  private final SelenideElement searchInput = $("input[placeholder='Search']");
 
   public FriendsPage friendsPage() {
     header.$("button").click();
@@ -30,6 +33,24 @@ public class MainPage {
   public EditSpendingPage editSpending(String spendingDescription) {
     tableRows.find(text(spendingDescription)).$$("td").get(5).click();
     return new EditSpendingPage();
+  }
+
+  public MainPage checkThatTableContainsSpendingWithName(String categoryName, String description) {
+    SelenideElement spendRow = $(By.xpath(
+            String.format("//tbody[.//td[2]/span[text() = '%1$s'] and .//td[4]/span[text() = '%2$s']]",
+                    categoryName,
+                    description
+            )));
+
+    if (spendRow.isDisplayed()) {
+      return this;
+    } else {
+      searchInput.click();
+      searchInput.sendKeys(description);
+      searchInput.submit();
+      spendRow.shouldBe(visible);
+      return this;
+    }
   }
 
   public void checkThatTableContainsSpending(String spendingDescription) {

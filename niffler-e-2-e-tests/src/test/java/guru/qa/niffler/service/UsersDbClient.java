@@ -7,12 +7,8 @@ import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 import guru.qa.niffler.data.entity.userdata.UserEntity;
 import guru.qa.niffler.data.repository.AuthUserRepository;
 import guru.qa.niffler.data.repository.UserdataUserRepository;
-import guru.qa.niffler.data.repository.impl.AuthUserRepositoryHibernate;
 import guru.qa.niffler.data.repository.impl.AuthUserRepositoryJdbc;
-import guru.qa.niffler.data.repository.impl.AuthUserRepositorySpringJdbc;
-import guru.qa.niffler.data.repository.impl.UserdataUserRepositoryHibernate;
 import guru.qa.niffler.data.repository.impl.UserdataUserRepositoryJdbc;
-import guru.qa.niffler.data.repository.impl.UserdataUserRepositorySpringJdbc;
 import guru.qa.niffler.data.tpl.XaTransactionTemplate;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.UserJson;
@@ -28,6 +24,7 @@ public class UsersDbClient implements UsersClient {
 
   private static final Config CFG = Config.getInstance();
   private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+  private static final String USER_PW = "12345";
 
   private final AuthUserRepository authUserRepository = new AuthUserRepositoryJdbc();
   private final UserdataUserRepository userdataUserRepository = new UserdataUserRepositoryJdbc();
@@ -47,7 +44,7 @@ public class UsersDbClient implements UsersClient {
   }
 
   @Override
-  public void addIncomeInvitation(UserJson targetUser, int count) {
+  public void sendInvitation(UserJson targetUser, int count) {
     if (count > 0) {
       UserEntity targetEntity = userdataUserRepository.findById(
           targetUser.id()
@@ -57,7 +54,7 @@ public class UsersDbClient implements UsersClient {
         xaTransactionTemplate.execute(() -> {
               final String username = randomUsername();
               userdataUserRepository.addFriendshipRequest(
-                  createNewUser(username, "12345"),
+                  createNewUser(username, USER_PW),
                   targetEntity
               );
               return null;
@@ -67,28 +64,22 @@ public class UsersDbClient implements UsersClient {
     }
   }
 
-  @Override
-  public void addOutcomeInvitation(UserJson targetUser, int count) {
-    if (count > 0) {
-      UserEntity targetEntity = userdataUserRepository.findById(
-          targetUser.id()
-      ).orElseThrow();
+    @Override
+    public void sendInvitation(UserJson user, UserJson targetUser) {
+        UserEntity targetEntity = userdataUserRepository.findById(
+                targetUser.id()
+        ).orElseThrow();
 
-      for (int i = 0; i < count; i++) {
         xaTransactionTemplate.execute(() -> {
-              String username = randomUsername();
-          userdataUserRepository.addFriendshipRequest(
-              targetEntity,
-              createNewUser(username, "12345")
-          );
-              return null;
-            }
-        );
-      }
+            userdataUserRepository.addFriendshipRequest(
+                    createNewUser(user.username(), USER_PW),
+                    targetEntity
+            );
+            return null;
+        });
     }
-  }
 
-  @Override
+    @Override
   public void addFriend(UserJson targetUser, int count) {
     if (count > 0) {
       UserEntity targetEntity = userdataUserRepository.findById(
