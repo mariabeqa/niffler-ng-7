@@ -44,7 +44,8 @@ public class SpendApiTest {
 
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .successLogin(username, USER_PW)
-                .checkThatTableContainsSpendingWithName(
+                .spendings()
+                .checkSpendingWith(
                         createdSpend.category().name(),
                         createdSpend.description()
                 );

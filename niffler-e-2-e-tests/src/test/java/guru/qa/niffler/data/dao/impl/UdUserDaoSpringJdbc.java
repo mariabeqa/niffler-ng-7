@@ -12,6 +12,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,13 +21,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class UdUserDaoSpringJdbc implements UdUserDao {
 
   private static final Config CFG = Config.getInstance();
   private final String url = CFG.userdataJdbcUrl();
 
   @Override
-  public UserEntity create(UserEntity user) {
+  public @Nullable UserEntity create(UserEntity user) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     KeyHolder kh = new GeneratedKeyHolder();
     jdbcTemplate.update(con -> {
@@ -52,7 +55,7 @@ public class UdUserDaoSpringJdbc implements UdUserDao {
   }
 
   @Override
-  public UserEntity update(UserEntity user) {
+  public @Nullable UserEntity update(UserEntity user) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     jdbcTemplate.update("""
                           UPDATE "user"
@@ -94,7 +97,7 @@ public class UdUserDaoSpringJdbc implements UdUserDao {
   }
 
   @Override
-  public Optional<UserEntity> findById(UUID id) {
+  public @Nonnull Optional<UserEntity> findById(UUID id) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     try {
       return Optional.ofNullable(
@@ -112,7 +115,7 @@ public class UdUserDaoSpringJdbc implements UdUserDao {
   }
 
   @Override
-  public Optional<UserEntity> findByUsername(String username) {
+  public @Nonnull Optional<UserEntity> findByUsername(String username) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     return Optional.ofNullable(
         jdbcTemplate.queryForObject(
@@ -126,7 +129,7 @@ public class UdUserDaoSpringJdbc implements UdUserDao {
   }
 
   @Override
-  public List<UserEntity> findAll() {
+  public @Nonnull List<UserEntity> findAll() {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     return jdbcTemplate.query(
         """

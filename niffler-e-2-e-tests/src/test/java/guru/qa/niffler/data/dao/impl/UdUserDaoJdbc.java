@@ -6,6 +6,9 @@ import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
 import guru.qa.niffler.data.entity.userdata.UserEntity;
 import guru.qa.niffler.data.mapper.UserdataUserEntityRowMapper;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,13 +19,14 @@ import java.util.UUID;
 
 import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class UdUserDaoJdbc implements UdUserDao {
 
   private static final Config CFG = Config.getInstance();
   private final String url = CFG.userdataJdbcUrl();
 
   @Override
-  public UserEntity create(UserEntity user) {
+  public @Nullable UserEntity create(UserEntity user) {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
         """
                INSERT INTO "user" (username, currency) VALUES (?, ?)
@@ -47,7 +51,7 @@ public class UdUserDaoJdbc implements UdUserDao {
   }
 
   @Override
-  public UserEntity update(UserEntity user) {
+  public @Nullable UserEntity update(UserEntity user) {
     try (PreparedStatement usersPs = holder(url).connection().prepareStatement(
         """
               UPDATE "user"
@@ -91,7 +95,7 @@ public class UdUserDaoJdbc implements UdUserDao {
   }
 
   @Override
-  public Optional<UserEntity> findById(UUID id) {
+  public @Nonnull Optional<UserEntity> findById(UUID id) {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
         """
                 SELECT * FROM "user" WHERE id = ?
@@ -115,7 +119,7 @@ public class UdUserDaoJdbc implements UdUserDao {
   }
 
   @Override
-  public Optional<UserEntity> findByUsername(String username) {
+  public @Nonnull Optional<UserEntity> findByUsername(String username) {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
         """
                 SELECT * FROM "user" WHERE username = ?
@@ -139,7 +143,7 @@ public class UdUserDaoJdbc implements UdUserDao {
   }
 
   @Override
-  public List<UserEntity> findAll() {
+  public @Nonnull List<UserEntity> findAll() {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
         "SELECT * FROM spend"
     )) {

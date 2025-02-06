@@ -10,19 +10,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class CategoryDaoSpringJdbc implements CategoryDao {
 
   private static final Config CFG = Config.getInstance();
   private final String url = CFG.spendJdbcUrl();
 
   @Override
-  public CategoryEntity create(CategoryEntity category) {
+  public @Nullable CategoryEntity create(CategoryEntity category) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     KeyHolder kh = new GeneratedKeyHolder();
     jdbcTemplate.update(con -> {
@@ -45,7 +49,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
   }
 
   @Override
-  public Optional<CategoryEntity> findById(UUID id) {
+  public @Nonnull Optional<CategoryEntity> findById(UUID id) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     try {
       return Optional.ofNullable(
@@ -61,7 +65,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
   }
 
   @Override
-  public List<CategoryEntity> findAll() {
+  public @Nonnull List<CategoryEntity> findAll() {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     return jdbcTemplate.query(
         "SELECT * FROM category",
@@ -70,7 +74,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
   }
 
   @Override
-  public CategoryEntity update(CategoryEntity category) {
+  public @Nullable CategoryEntity update(CategoryEntity category) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     jdbcTemplate.update("""
               UPDATE "category"

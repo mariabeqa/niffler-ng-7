@@ -1,11 +1,15 @@
 package guru.qa.niffler.page;
 
 import com.codeborne.selenide.SelenideElement;
+import guru.qa.niffler.config.Config;
+import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 
 public class RegisterPage {
+
+  public static final String URL = Config.getInstance().authUrl() + "register";
 
   private final SelenideElement usernameInput = $("input[name='username']");
   private final SelenideElement passwordInput = $("input[name='password']");
@@ -14,6 +18,7 @@ public class RegisterPage {
   private final SelenideElement proceedLoginButton = $(".form_sign-in");
   private final SelenideElement errorContainer = $(".form__error");
 
+  @Step("Заполняем форму регистрации {login}/{password}")
   public RegisterPage fillRegisterPage(String login, String password, String passwordSubmit) {
     usernameInput.setValue(login);
     passwordInput.setValue(password);
