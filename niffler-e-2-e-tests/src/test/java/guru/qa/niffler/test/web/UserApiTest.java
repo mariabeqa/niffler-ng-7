@@ -4,6 +4,7 @@ import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.api.UsersApiClient;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.model.UserJson;
+import guru.qa.niffler.page.FriendsPage;
 import guru.qa.niffler.page.LoginPage;
 import org.junit.jupiter.api.Test;
 
@@ -42,9 +43,9 @@ public class UserApiTest {
 
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .successLogin(targetUser.username(), USER_PW)
-                .checkThatPageLoaded()
-                .friendsPage()
-                .checkUserHasOneIncomeInvitation();
+                .checkThatPageLoaded();
+        Selenide.open(FriendsPage.URL, FriendsPage.class)
+                .checkAmountOfIncomeInvitations(1);
     }
 
     @Test
@@ -59,8 +60,8 @@ public class UserApiTest {
 
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .successLogin(targetUser.username(), USER_PW)
-                .checkThatPageLoaded()
-                .friendsPage()
-                .checkUserHasOneFriend();
+                .checkThatPageLoaded();
+        Selenide.open(FriendsPage.URL, FriendsPage.class)
+                .checkAmountOfFriends(1);
     }
 }

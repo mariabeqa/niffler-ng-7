@@ -5,6 +5,8 @@ import guru.qa.niffler.data.dao.AuthAuthorityDao;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 import guru.qa.niffler.data.mapper.AuthorityEntityRowMapper;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,6 +16,7 @@ import java.util.UUID;
 
 import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
 
   private static final Config CFG = Config.getInstance();
@@ -36,7 +39,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
   }
 
   @Override
-  public List<AuthorityEntity> findAll() {
+  public @Nonnull List<AuthorityEntity> findAll() {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
         "SELECT * FROM authority")) {
       ps.execute();
@@ -53,7 +56,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
   }
 
   @Override
-  public List<AuthorityEntity> findAllByUserId(UUID userId) {
+  public @Nonnull List<AuthorityEntity> findAllByUserId(UUID userId) {
     try (PreparedStatement ps = holder(url).connection().prepareStatement(
         "SELECT * FROM authority where user_id = ?")) {
       ps.setObject(1, userId);

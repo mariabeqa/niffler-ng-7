@@ -10,19 +10,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class SpendDaoSpringJdbc implements SpendDao {
 
   private static final Config CFG = Config.getInstance();
   private final String url = CFG.spendJdbcUrl();
 
   @Override
-  public SpendEntity create(SpendEntity spend) {
+  public @Nullable SpendEntity create(SpendEntity spend) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     KeyHolder kh = new GeneratedKeyHolder();
     jdbcTemplate.update(con -> {
@@ -48,7 +52,7 @@ public class SpendDaoSpringJdbc implements SpendDao {
   }
 
   @Override
-  public Optional<SpendEntity> findById(UUID id) {
+  public @Nonnull Optional<SpendEntity> findById(UUID id) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     try {
       return Optional.ofNullable(
@@ -64,7 +68,7 @@ public class SpendDaoSpringJdbc implements SpendDao {
   }
 
   @Override
-  public List<SpendEntity> findAll() {
+  public @Nonnull List<SpendEntity> findAll() {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     return jdbcTemplate.query(
         """
@@ -75,7 +79,7 @@ public class SpendDaoSpringJdbc implements SpendDao {
   }
 
   @Override
-  public SpendEntity update(SpendEntity spend) {
+  public @Nullable SpendEntity update(SpendEntity spend) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     jdbcTemplate.update("""
               UPDATE "spend"

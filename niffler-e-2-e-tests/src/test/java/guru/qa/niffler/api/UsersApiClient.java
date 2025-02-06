@@ -12,11 +12,14 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static guru.qa.niffler.utils.RandomDataUtils.randomUsername;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ParametersAreNonnullByDefault
 public class UsersApiClient implements UsersClient {
 
     public static final String USER_PW = "12345";
@@ -73,7 +76,7 @@ public class UsersApiClient implements UsersClient {
                 null,
                 null,
                 null,
-                new TestData(password, null, null)
+                new TestData(password, new ArrayList<>(), new ArrayList<>())
         );
     }
 
