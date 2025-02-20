@@ -12,13 +12,15 @@ import org.springframework.core.io.ClassPathResource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 
 public class ScreenShotTestExtension implements ParameterResolver, TestExecutionExceptionHandler {
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(ScreenShotTestExtension.class);
-    public static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Base64.Encoder encoder = Base64.getEncoder();
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
@@ -29,15 +31,29 @@ public class ScreenShotTestExtension implements ParameterResolver, TestExecution
     @SneakyThrows
     @Override
     public BufferedImage resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return ImageIO.read(new ClassPathResource("img/expected-stat.png").getInputStream());
+        return ImageIO.read(new ClassPathResource(extensionContext.getRequiredTestMethod().getAnnotation(ScreenShotTest.class).value()).getInputStream());
     }
 
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
+        ScreenShotTest anno = context.getRequiredTestMethod().getAnnotation(ScreenShotTest.class);
+
+        if (anno.rewriteExpected()) {
+            String path = String.format("niffler-e-2-e-tests/src/test/resources/%s", anno.value());
+            try{
+                ImageIO.write(
+                        getActual(), "png",
+                        new File(path).getAbsoluteFile()
+                );
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         ScreenDif screenDif = new ScreenDif(
-                "data:image/png;base64," + Base64.getEncoder().encodeToString(imageToBytes(getExpected())),
-                "data:image/png;base64," + Base64.getEncoder().encodeToString(imageToBytes(getActual())),
-                "data:image/png;base64," + Base64.getEncoder().encodeToString(imageToBytes(getDif()))
+                "data:image/png;base64," + encoder.encodeToString(imageToBytes(getExpected())),
+                "data:image/png;base64," + encoder.encodeToString(imageToBytes(getActual())),
+                "data:image/png;base64," + encoder.encodeToString(imageToBytes(getDif()))
         );
 
         Allure.addAttachment(
