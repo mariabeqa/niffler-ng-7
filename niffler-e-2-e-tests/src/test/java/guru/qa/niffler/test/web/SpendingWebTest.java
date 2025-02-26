@@ -1,23 +1,26 @@
 package guru.qa.niffler.test.web;
 
 import com.codeborne.selenide.Selenide;
+import guru.qa.niffler.condition.Bubble;
+import guru.qa.niffler.condition.Color;
 import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
 import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
+import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.model.rest.UserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.page.component.SpendingTable;
+import guru.qa.niffler.page.component.StatComponent;
 import guru.qa.niffler.utils.RandomDataUtils;
 import guru.qa.niffler.utils.ScreenDiffResult;
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Date;
 
-import static com.codeborne.selenide.Selenide.$;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @WebTest
@@ -124,16 +127,170 @@ public class SpendingWebTest {
       )
   )
   @ScreenShotTest("img/expected-stat.png")
-  void checkStatComponentTest(UserJson user, BufferedImage expected) throws IOException {
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage());
+  void checkStatComponentTest(UserJson user, BufferedImage expected) throws IOException, InterruptedException {
+    StatComponent statComponent = Selenide.open(LoginPage.URL, LoginPage.class)
+            .fillLoginPage(user.username(), user.testData().password())
+            .submit(new MainPage())
+            .getStatComponent();
 
-    BufferedImage actual = ImageIO.read($("canvas[role='img']").screenshot());
+    Thread.sleep(3000);
+
     assertFalse(new ScreenDiffResult(
         expected,
-        actual
-    ));
+        statComponent.chartScreenshot()
+    ),
+            "Screen comparison failure"
+    );
+
+    statComponent.checkBubbles(new Bubble(Color.yellow, "Обучение"));
+  }
+
+  @User(
+          spendings =
+                  {
+                          @Spending(
+                                  category = "Обучение",
+                                  description = "Обучение Advanced 2.0",
+                                  amount = 79990
+                          ),
+                          @Spending(
+                                  category = "Рыбалка",
+                                  description = "Рыбалка на Неве",
+                                  amount = 1000
+                          )
+                  }
+  )
+  @Test
+  void checkBubblesTest(UserJson user) throws InterruptedException {
+    StatComponent statComponent = Selenide.open(LoginPage.URL, LoginPage.class)
+            .fillLoginPage(user.username(), user.testData().password())
+            .submit(new MainPage())
+            .getStatComponent();
+
+    Thread.sleep(3000);
+
+    statComponent.checkBubbles(
+            new Bubble(Color.yellow, "Обучение 79990 ₽"),
+            new Bubble(Color.green, "Рыбалка 1000 ₽")
+            );
+  }
+
+  @User(
+          spendings =
+                  {
+                          @Spending(
+                                  category = "Обучение",
+                                  description = "Обучение Advanced 2.0",
+                                  amount = 79990
+                          ),
+                          @Spending(
+                                  category = "Рыбалка",
+                                  description = "Рыбалка на Неве",
+                                  amount = 1000
+                          )
+                          ,
+                          @Spending(
+                                  category = "Спорт",
+                                  description = "Коврик для йоги",
+                                  amount = 5000
+                          )
+                  }
+  )
+  @Test
+  void checkBubblesInAnyOderTest(UserJson user) throws InterruptedException {
+    StatComponent statComponent = Selenide.open(LoginPage.URL, LoginPage.class)
+            .fillLoginPage(user.username(), user.testData().password())
+            .submit(new MainPage())
+            .getStatComponent();
+
+    Thread.sleep(3000);
+
+    statComponent.checkBubblesInAnyOrder(
+            new Bubble(Color.orange, "Рыбалка 1000 ₽"),
+            new Bubble(Color.yellow, "Обучение 79990 ₽"),
+            new Bubble(Color.green, "Спорт 5000 ₽")
+    );
+  }
+
+  @User(
+          spendings =
+                  {
+                          @Spending(
+                                  category = "Обучение",
+                                  description = "Обучение Advanced 2.0",
+                                  amount = 79990
+                          ),
+                          @Spending(
+                                  category = "Рыбалка",
+                                  description = "Рыбалка на Неве",
+                                  amount = 1000
+                          )
+                          ,
+                          @Spending(
+                                  category = "Спорт",
+                                  description = "Коврик для йоги",
+                                  amount = 5000
+                          ),
+                          @Spending(
+                                  category = "Продукты",
+                                  description = "Фрукты",
+                                  amount = 3000
+                          ),
+                  }
+  )
+  @Test
+  void checkBubblesContainsTest(UserJson user) throws InterruptedException {
+    StatComponent statComponent = Selenide.open(LoginPage.URL, LoginPage.class)
+            .fillLoginPage(user.username(), user.testData().password())
+            .submit(new MainPage())
+            .getStatComponent();
+
+    Thread.sleep(3000);
+
+    statComponent.checkBubblesContains(
+            new Bubble(Color.yellow, "Обучение 79990 ₽"),
+            new Bubble(Color.blue, "Рыбалка 1000 ₽")
+    );
+  }
+
+  @User(
+          spendings =
+                  {
+                          @Spending(
+                                  category = "Обучение",
+                                  description = "Обучение Advanced 2.0",
+                                  amount = 79990
+                          ),
+                          @Spending(
+                                  category = "Рыбалка",
+                                  description = "Рыбалка на Неве",
+                                  amount = 1000
+                          )
+                          ,
+                          @Spending(
+                                  category = "Спорт",
+                                  description = "Коврик для йоги",
+                                  amount = 5000
+                          ),
+                          @Spending(
+                                  category = "Продукты",
+                                  description = "Фрукты",
+                                  amount = 3000
+                          ),
+                  }
+  )
+  @Test
+  void spendingTableShouldContainInfo(UserJson user) throws InterruptedException {
+    SpendingTable spendings = Selenide.open(LoginPage.URL, LoginPage.class)
+            .fillLoginPage(user.username(), user.testData().password())
+            .submit(new MainPage())
+            .getSpendingTable();
+
+    Thread.sleep(3000);
+
+    spendings.checkSpendingTable(
+            user.testData().spends().toArray(SpendJson[]::new)
+    );
   }
 }
 
