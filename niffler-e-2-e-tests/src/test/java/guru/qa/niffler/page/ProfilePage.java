@@ -2,6 +2,7 @@ package guru.qa.niffler.page;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideDriver;
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.jupiter.extension.ScreenShotTestExtension;
 import guru.qa.niffler.utils.ScreenDiffResult;
@@ -28,16 +29,30 @@ public class ProfilePage extends BasePage<ProfilePage> {
 
   public static final String URL = CFG.frontUrl() + "profile";
 
-  private final SelenideElement avatar = $("#image__input").parent().$("img");
-  private final SelenideElement userName = $("#username");
-  private final SelenideElement nameInput = $("#name");
-  private final SelenideElement photoInput = $("input[type='file']");
-  private final SelenideElement submitButton = $("button[type='submit']");
-  private final SelenideElement categoryInput = $("input[name='category']");
-  private final SelenideElement archivedSwitcher = $(".MuiSwitch-input");
+  private final SelenideElement avatar;
+  private final SelenideElement userName;
+  private final SelenideElement nameInput;
+  private final SelenideElement photoInput;
+  private final SelenideElement submitButton;
+  private final SelenideElement categoryInput;
+  private final SelenideElement archivedSwitcher;
 
-  private final ElementsCollection bubbles = $$(".MuiChip-filled.MuiChip-colorPrimary");
-  private final ElementsCollection bubblesArchived = $$(".MuiChip-filled.MuiChip-colorDefault");
+  private final ElementsCollection bubbles;
+  private final ElementsCollection bubblesArchived;
+
+  public ProfilePage(SelenideDriver driver) {
+    super(driver);
+    this.avatar = driver.$("#image__input").parent().$("img");
+    this.userName = driver.$("#username");
+    this.nameInput = driver.$("#name");
+    this.photoInput = driver.$("input[type='file']");
+    this.submitButton = driver.$("button[type='submit']");
+    this.categoryInput = driver.$("input[name='category']");
+    this.archivedSwitcher = driver.$(".MuiSwitch-input");
+
+    this.bubbles = driver.$$(".MuiChip-filled.MuiChip-colorPrimary");
+    this.bubblesArchived = driver.$$(".MuiChip-filled.MuiChip-colorDefault");
+  }
 
   @Step("Set name: '{0}'")
   @Nonnull

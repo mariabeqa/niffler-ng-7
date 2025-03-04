@@ -5,12 +5,17 @@ import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
+import guru.qa.niffler.jupiter.converter.BrowserConverter;
 import guru.qa.niffler.model.rest.UserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.page.ProfilePage;
+import guru.qa.niffler.utils.Browser;
 import guru.qa.niffler.utils.SelenideUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -28,16 +33,19 @@ public class ProfileTest {
           archived = true
       )
   )
-  @Test
-  void archivedCategoryShouldPresentInCategoriesList(UserJson user) {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void archivedCategoryShouldPresentInCategoriesList(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
     final String categoryName = user.testData().categoryDescriptions()[0];
 
-    driver.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .checkThatPageLoaded();
 
-    driver.open(ProfilePage.URL, ProfilePage.class)
+    driver.open(ProfilePage.URL);
+    new ProfilePage(driver)
         .checkArchivedCategoryExists(categoryName);
   }
 
@@ -46,30 +54,37 @@ public class ProfileTest {
           archived = false
       )
   )
-  @Test
-  void activeCategoryShouldPresentInCategoriesList(UserJson user) {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void activeCategoryShouldPresentInCategoriesList(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
     final String categoryName = user.testData().categoryDescriptions()[0];
 
-    driver.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .checkThatPageLoaded();
 
-    driver.open(ProfilePage.URL, ProfilePage.class)
+    driver.open(ProfilePage.URL);
+    new ProfilePage(driver)
         .checkCategoryExists(categoryName);
   }
 
   @User
   @ScreenShotTest(value = "img/expected-avatar.png")
-  void shouldUpdateProfileWithAllFieldsSet(UserJson user, BufferedImage expectedAvatar) throws IOException {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldUpdateProfileWithAllFieldsSet(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user, BufferedImage expectedAvatar) throws IOException {
     final String newName = randomName();
 
-    ProfilePage profilePage = driver.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
-        .checkThatPageLoaded()
+        .submit(new MainPage(driver))
+        .checkThatPageLoaded();
+    new MainPage(driver)
         .getHeader()
-        .toProfilePage()
+        .toProfilePage(driver)
         .uploadPhotoFromClasspath("img/cat.jpeg")
         .setName(newName)
         .submitProfile()
@@ -77,42 +92,46 @@ public class ProfileTest {
 
     driver.refresh();
 
-    profilePage.checkName(newName)
+    new ProfilePage(driver).checkName(newName)
         .checkPhotoExist()
         .checkPhoto(expectedAvatar);
   }
 
   @User
-  @Test
-  void shouldUpdateProfileWithOnlyRequiredFields(UserJson user) {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldUpdateProfileWithOnlyRequiredFields(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
     final String newName = randomName();
 
-    ProfilePage profilePage = driver.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .checkThatPageLoaded()
         .getHeader()
-        .toProfilePage()
+        .toProfilePage(driver)
         .setName(newName)
         .submitProfile()
         .checkAlertMessage("Profile successfully updated");
 
     driver.refresh();
 
-    profilePage.checkName(newName);
+    new ProfilePage(driver).checkName(newName);
   }
 
   @User
-  @Test
-  void shouldAddNewCategory(UserJson user) {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldAddNewCategory(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
     String newCategory = randomCategoryName();
 
-    driver.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .checkThatPageLoaded()
         .getHeader()
-        .toProfilePage()
+        .toProfilePage(driver)
         .addCategory(newCategory)
         .checkAlertMessage("You've added new category:")
         .checkCategoryExists(newCategory);
@@ -130,14 +149,16 @@ public class ProfileTest {
           @Category(name = "Books")
       }
   )
-  @Test
-  void shouldForbidAddingMoreThat8Categories(UserJson user) {
-    driver.open(LoginPage.URL, LoginPage.class)
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldForbidAddingMoreThat8Categories(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .checkThatPageLoaded()
         .getHeader()
-        .toProfilePage()
+        .toProfilePage(driver)
         .checkThatCategoryInputDisabled();
   }
 }

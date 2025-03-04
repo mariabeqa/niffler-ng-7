@@ -40,9 +40,8 @@ public class LoginPage extends BasePage<LoginPage> {
   }
 
   @Nonnull
-  public RegisterPage doRegister() {
+  public void doRegister() {
     registerButton.click();
-    return new RegisterPage();
   }
 
   @Step("Fill login page with credentials: username: '{0}', password: {1}")
@@ -72,6 +71,12 @@ public class LoginPage extends BasePage<LoginPage> {
   public <T extends BasePage<?>> T submit(T expectedPage) {
     submitButton.click();
     return expectedPage;
+  }
+
+  @Step("Submit login")
+  @Nonnull
+  public void submit() {
+    submitButton.click();
   }
 
   @Step("Check error on page: {error}")

@@ -13,4 +13,9 @@ public class SelenideUtils {
             .browser("firefox")
             .pageLoadStrategy("eager")
             .timeout(5000L);
+
+    public static final SelenideConfig safariConfig = new SelenideConfig()
+            .browser("safari")
+            .pageLoadStrategy("eager")
+            .timeout(5000L);
 }

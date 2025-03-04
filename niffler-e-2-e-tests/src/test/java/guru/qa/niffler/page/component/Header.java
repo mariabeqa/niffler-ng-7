@@ -1,6 +1,8 @@
 package guru.qa.niffler.page.component;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideDriver;
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.page.EditSpendingPage;
 import guru.qa.niffler.page.FriendsPage;
@@ -19,38 +21,43 @@ import static com.codeborne.selenide.Selenide.$;
 @ParametersAreNonnullByDefault
 public class Header extends BaseComponent<Header> {
 
-  public Header() {
-    super($("#root header"));
-  }
+  private final SelenideElement mainPageLink;
+  private final SelenideElement addSpendingBtn;
+  private final SelenideElement menuBtn;
+  private final SelenideElement menu;
+  private final ElementsCollection menuItems;
 
-  private final SelenideElement mainPageLink = self.$("a[href*='/main']");
-  private final SelenideElement addSpendingBtn = self.$("a[href*='/spending']");
-  private final SelenideElement menuBtn = self.$("button");
-  private final SelenideElement menu = $("ul[role='menu']");
-  private final ElementsCollection menuItems = menu.$$("li");
+  public Header(SelenideDriver driver) {
+    super(driver.$("#root header"));
+    this.mainPageLink = driver.$("a[href*='/main']");
+    this.addSpendingBtn = driver.$("a[href*='/spending']");
+    this.menuBtn = driver.$("button[aria-label='Menu']");
+    this.menu = driver.$("ul[role='menu']");
+    this.menuItems = driver.$$("li");
+  }
 
   @Step("Open Friends page")
   @Nonnull
-  public FriendsPage toFriendsPage() {
+  public FriendsPage toFriendsPage(SelenideDriver driver) {
     menuBtn.click();
     menuItems.find(text("Friends")).click();
-    return new FriendsPage();
+    return new FriendsPage(driver);
   }
 
   @Step("Open All Peoples page")
   @Nonnull
-  public PeoplePage toAllPeoplesPage() {
+  public PeoplePage toAllPeoplesPage(SelenideDriver driver) {
     menuBtn.click();
     menuItems.find(text("All People")).click();
-    return new PeoplePage();
+    return new PeoplePage(driver);
   }
 
   @Step("Open Profile page")
   @Nonnull
-  public ProfilePage toProfilePage() {
+  public ProfilePage toProfilePage(SelenideDriver driver) {
     menuBtn.click();
     menuItems.find(text("Profile")).click();
-    return new ProfilePage();
+    return new ProfilePage(driver);
   }
 
   @Step("Sign out")
@@ -63,15 +70,14 @@ public class Header extends BaseComponent<Header> {
 
   @Step("Add new spending")
   @Nonnull
-  public EditSpendingPage addSpendingPage() {
+  public void addSpendingPage() {
     addSpendingBtn.click();
-    return new EditSpendingPage();
   }
 
   @Step("Go to main page")
   @Nonnull
-  public MainPage toMainPage() {
+  public MainPage toMainPage(SelenideDriver driver) {
     mainPageLink.click();
-    return new MainPage();
+    return new MainPage(driver);
   }
 }
