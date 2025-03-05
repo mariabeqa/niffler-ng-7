@@ -11,8 +11,6 @@ import org.openqa.selenium.TakesScreenshot;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 @ParametersAreNonnullByDefault
 public class BrowserExtension implements
@@ -21,18 +19,20 @@ public class BrowserExtension implements
     TestExecutionExceptionHandler,
     LifecycleMethodExecutionExceptionHandler {
 
-  private final List<SelenideDriver> drivers = new ArrayList<>();
+  private final ThreadLocal<SelenideDriver> driver = new ThreadLocal<>();
 
-  public List<SelenideDriver> drivers() {
-    return drivers;
+  public SelenideDriver driver() {
+    return this.driver.get();
+  }
+
+  public void add(SelenideDriver driver) {
+    this.driver.set(driver);
   }
 
   @Override
   public void afterEach(ExtensionContext context) throws Exception {
-    for (SelenideDriver driver : drivers) {
-      if (driver.hasWebDriverStarted()) {
-        driver.close();
-      }
+    if (driver.get().hasWebDriverStarted()) {
+      driver.get().close();
     }
   }
 
@@ -63,15 +63,13 @@ public class BrowserExtension implements
   }
 
   private void doScreenshot() {
-    for (SelenideDriver driver : drivers) {
-      if (driver.hasWebDriverStarted()) {
-        Allure.addAttachment(
-                "Screen on fail for browser " + driver.getSessionId(),
-                new ByteArrayInputStream(
-                        ((TakesScreenshot) driver.getWebDriver()).getScreenshotAs(OutputType.BYTES)
-                )
-        );
-      }
+    if (driver.get().hasWebDriverStarted()) {
+      Allure.addAttachment(
+              "Screen on fail for browser " + driver.get().getSessionId(),
+              new ByteArrayInputStream(
+                      ((TakesScreenshot) driver.get().getWebDriver()).getScreenshotAs(OutputType.BYTES)
+              )
+      );
     }
   }
 }

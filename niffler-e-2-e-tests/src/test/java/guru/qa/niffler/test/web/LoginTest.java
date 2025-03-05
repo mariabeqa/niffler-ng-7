@@ -2,14 +2,12 @@ package guru.qa.niffler.test.web;
 
 import com.codeborne.selenide.SelenideDriver;
 import guru.qa.niffler.jupiter.annotation.User;
-import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.jupiter.converter.BrowserConverter;
 import guru.qa.niffler.jupiter.extension.BrowserExtension;
 import guru.qa.niffler.model.rest.UserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.utils.Browser;
-import guru.qa.niffler.utils.SelenideUtils;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ConvertWith;
@@ -21,13 +19,14 @@ import static guru.qa.niffler.utils.RandomDataUtils.randomUsername;
 public class LoginTest {
 
   @RegisterExtension
-  private final BrowserExtension browserExtension = new BrowserExtension();
-  private final SelenideDriver driver = new SelenideDriver(SelenideUtils.chromeConfig);
+  private static final BrowserExtension browserExtension = new BrowserExtension();
 
   @User
   @ParameterizedTest
   @EnumSource(Browser.class)
   void mainPageShouldBeDisplayedAfterSuccessLogin(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
+    browserExtension.add(driver);
+
     driver.open(LoginPage.URL);
 
     new LoginPage(driver)
@@ -39,6 +38,8 @@ public class LoginTest {
   @ParameterizedTest
   @EnumSource(Browser.class)
   void userShouldStayOnLoginPageAfterLoginWithBadCredentials(@ConvertWith(BrowserConverter.class) SelenideDriver driver) {
+    browserExtension.add(driver);
+
     driver.open(LoginPage.URL);
 
     new LoginPage(driver)
