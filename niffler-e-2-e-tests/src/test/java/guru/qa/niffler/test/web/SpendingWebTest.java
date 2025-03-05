@@ -1,17 +1,24 @@
 package guru.qa.niffler.test.web;
 
-import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideDriver;
 import guru.qa.niffler.condition.Color;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
 import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
+import guru.qa.niffler.jupiter.converter.BrowserConverter;
 import guru.qa.niffler.model.rest.UserJson;
+import guru.qa.niffler.page.EditSpendingPage;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.utils.Browser;
 import guru.qa.niffler.utils.RandomDataUtils;
+import guru.qa.niffler.utils.SelenideUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -20,6 +27,8 @@ import java.util.Date;
 @WebTest
 public class SpendingWebTest {
 
+  private final SelenideDriver driver = new SelenideDriver(SelenideUtils.chromeConfig);
+
   @User(
       spendings = @Spending(
           category = "Обучение",
@@ -27,35 +36,41 @@ public class SpendingWebTest {
           amount = 79990
       )
   )
-  @Test
-  void categoryDescriptionShouldBeChangedFromTable(UserJson user) {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void categoryDescriptionShouldBeChangedFromTable(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
     final String newDescription = "Обучение Niffler Next Generation";
 
-    Selenide.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .getSpendingTable()
-        .editSpending("Обучение Advanced 2.0")
+        .editSpending("Обучение Advanced 2.0");
+    new EditSpendingPage(driver)
         .setNewSpendingDescription(newDescription)
         .saveSpending();
 
-    new MainPage().getSpendingTable()
+    new MainPage(driver).getSpendingTable()
         .checkTableContains(newDescription);
   }
 
   @User
-  @Test
-  void shouldAddNewSpending(UserJson user) {
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldAddNewSpending(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
     String category = "Friends";
     int amount = 100;
     Date currentDate = new Date();
     String description = RandomDataUtils.randomSentence(3);
 
-    Selenide.open(LoginPage.URL, LoginPage.class)
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .getHeader()
-        .addSpendingPage()
+        .addSpendingPage();
+    new EditSpendingPage(driver)
         .setNewSpendingCategory(category)
         .setNewSpendingAmount(amount)
         .setNewSpendingDate(currentDate)
@@ -63,18 +78,21 @@ public class SpendingWebTest {
         .saveSpending()
         .checkAlertMessage("New spending is successfully created");
 
-    new MainPage().getSpendingTable()
+    new MainPage(driver).getSpendingTable()
         .checkTableContains(description);
   }
 
   @User
-  @Test
-  void shouldNotAddSpendingWithEmptyCategory(UserJson user) {
-    Selenide.open(LoginPage.URL, LoginPage.class)
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldNotAddSpendingWithEmptyCategory(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .getHeader()
-        .addSpendingPage()
+        .addSpendingPage();
+    new EditSpendingPage(driver)
         .setNewSpendingAmount(100)
         .setNewSpendingDate(new Date())
         .saveSpending()
@@ -82,13 +100,16 @@ public class SpendingWebTest {
   }
 
   @User
-  @Test
-  void shouldNotAddSpendingWithEmptyAmount(UserJson user) {
-    Selenide.open(LoginPage.URL, LoginPage.class)
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void shouldNotAddSpendingWithEmptyAmount(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .getHeader()
-        .addSpendingPage()
+        .addSpendingPage();
+    new EditSpendingPage(driver)
         .setNewSpendingCategory("Friends")
         .setNewSpendingDate(new Date())
         .saveSpending()
@@ -102,11 +123,13 @@ public class SpendingWebTest {
           amount = 79990
       )
   )
-  @Test
-  void deleteSpendingTest(UserJson user) {
-    Selenide.open(LoginPage.URL, LoginPage.class)
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void deleteSpendingTest(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user) {
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit(new MainPage(driver))
         .getSpendingTable()
         .deleteSpending("Обучение Advanced 2.0")
         .checkTableSize(0);
@@ -121,10 +144,14 @@ public class SpendingWebTest {
       )
   )
   @ScreenShotTest("img/expected-stat.png")
-  void checkStatComponentTest(UserJson user, BufferedImage expected) throws IOException {
-    Selenide.open(LoginPage.URL, LoginPage.class)
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void checkStatComponentTest(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user, BufferedImage expected) throws IOException {
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit();
+    new MainPage(driver)
         .getStatComponent()
         .checkStatisticBubblesContains("Обучение 79990 ₽")
         .checkStatisticImage(expected)
@@ -156,10 +183,14 @@ public class SpendingWebTest {
       }
   )
   @ScreenShotTest(value = "img/expected-stat-archived.png")
-  void statComponentShouldDisplayArchivedCategories(UserJson user, BufferedImage expected) throws IOException {
-    Selenide.open(LoginPage.URL, LoginPage.class)
+  @ParameterizedTest
+  @EnumSource(Browser.class)
+  void statComponentShouldDisplayArchivedCategories(@ConvertWith(BrowserConverter.class) SelenideDriver driver, UserJson user, BufferedImage expected) throws IOException {
+    driver.open(LoginPage.URL);
+    new LoginPage(driver)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+        .submit();
+    new MainPage(driver)
         .getStatComponent()
         .checkStatisticBubblesContains("Поездки 9500 ₽", "Archived 3100 ₽")
         .checkStatisticImage(expected)

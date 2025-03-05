@@ -2,6 +2,7 @@ package guru.qa.niffler.page.component;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideDriver;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 
@@ -18,20 +19,23 @@ import static java.util.Calendar.YEAR;
 @ParametersAreNonnullByDefault
 public class Calendar extends BaseComponent<Calendar> {
 
-  public Calendar(SelenideElement self) {
-    super(self);
-  }
+  private final SelenideElement input;
+  private final SelenideElement calendarButton;
+  private final SelenideElement prevMonthButton;
+  private final SelenideElement nextMonthButton;
+  private final SelenideElement currentMonthAndYear;
+  private final ElementsCollection dateRows;
 
-  public Calendar() {
-    super($(".MuiPickersLayout-root"));
-  }
+  public Calendar(SelenideDriver driver) {
+    super(driver.$(".MuiPickersLayout-root"));
 
-  private final SelenideElement input = $("input[name='date']");
-  private final SelenideElement calendarButton = $("button[aria-label*='Choose date']");
-  private final SelenideElement prevMonthButton = self.$("button[title='Previous month']");
-  private final SelenideElement nextMonthButton = self.$("button[title='Next month']");
-  private final SelenideElement currentMonthAndYear = self.$(".MuiPickersCalendarHeader-label");
-  private final ElementsCollection dateRows = self.$$(".MuiDayCalendar-weekContainer");
+    this.input = driver.$("input[name='date']");
+    this.calendarButton = driver.$("button[aria-label*='Choose date']");
+    this.prevMonthButton = self.$("button[title='Previous month']");
+    this.nextMonthButton = self.$("button[title='Next month']");
+    this.currentMonthAndYear = self.$(".MuiPickersCalendarHeader-label");
+    this.dateRows = self.$$(".MuiDayCalendar-weekContainer");
+  }
 
   @Step("Select date in calendar: '{date}'")
   public void selectDateInCalendar(Date date) {

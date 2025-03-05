@@ -1,5 +1,6 @@
 package guru.qa.niffler.page.component;
 
+import com.codeborne.selenide.SelenideDriver;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 
@@ -17,8 +18,8 @@ public class SearchField extends BaseComponent<SearchField> {
     super(self);
   }
 
-  public SearchField() {
-    super($("input[aria-label='search']"));
+  public SearchField(SelenideDriver driver) {
+    super(driver.$("input[aria-label='search']"));
   }
 
   private final SelenideElement clearSearchInputBtn = $("#input-clear");

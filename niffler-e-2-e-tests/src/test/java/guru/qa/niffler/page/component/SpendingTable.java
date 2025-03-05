@@ -1,6 +1,8 @@
 package guru.qa.niffler.page.component;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideDriver;
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.model.DataFilterValues;
 import guru.qa.niffler.page.EditSpendingPage;
@@ -20,21 +22,32 @@ import static com.codeborne.selenide.Selenide.$$;
 @ParametersAreNonnullByDefault
 public class SpendingTable extends BaseComponent<SpendingTable> {
 
-  private final SearchField searchField = new SearchField();
-  private final SelenideElement periodMenu = self.$("#period");
-  private final SelenideElement currencyMenu = self.$("#currency");
-  private final ElementsCollection menuItems = $$(".MuiList-padding li");
-  private final SelenideElement deleteBtn = self.$("#delete");
-  private final SelenideElement popup = $("div[role='dialog']");
+  private final SearchField searchField;
+  private final SelenideElement periodMenu;
+  private final SelenideElement currencyMenu;
+  private final ElementsCollection menuItems;
+  private final SelenideElement deleteBtn;
+  private final SelenideElement popup;
 
-  private final SelenideElement tableHeader = self.$(".MuiTableHead-root");
-  private final ElementsCollection headerCells = tableHeader.$$(".MuiTableCell-root");
+  private final SelenideElement tableHeader;
+  private final ElementsCollection headerCells;
 
-  private final ElementsCollection tableRows = self.$("tbody").$$("tr");
+  private final ElementsCollection tableRows;
 
 
-  public SpendingTable() {
-    super($("#spendings"));
+  public SpendingTable(SelenideDriver driver) {
+    super(driver.$("#spendings"));
+    this.searchField = new SearchField(driver);
+    this.periodMenu = self.$("#period");
+    this.currencyMenu = self.$("#currency");
+    this.menuItems = driver.$$(".MuiList-padding li");
+    this.deleteBtn = self.$("#delete");
+    this.popup = driver.$("div[role='dialog']");
+
+    this.tableHeader = self.$(".MuiTableHead-root");
+    this.headerCells = tableHeader.$$(".MuiTableCell-root");
+
+    this.tableRows = self.$("tbody").$$("tr");
   }
 
   @Step("Select table period '{0}'")
@@ -47,11 +60,10 @@ public class SpendingTable extends BaseComponent<SpendingTable> {
 
   @Step("Edit spending with description '{0}'")
   @Nonnull
-  public EditSpendingPage editSpending(String description) {
+  public void editSpending(String description) {
     searchSpendingByDescription(description);
     SelenideElement row = tableRows.find(text(description));
     row.$$("td").get(5).click();
-    return new EditSpendingPage();
   }
 
   @Step("Delete spending with description '{0}'")
