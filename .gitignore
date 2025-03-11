@@ -6,6 +6,9 @@ build
 !gradle/wrapper/gradle-wrapper.properties
 !**/src/main/**/build/
 !**/src/test/**/build/
+tmlog3.log
+niffler-e-2-e-tests/src/test/graphql/
+logs/
 
 ### STS ###
 .apt_generated
