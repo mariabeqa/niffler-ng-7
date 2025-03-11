@@ -2,10 +2,7 @@ package guru.qa.niffler.test.web;
 
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.condition.Color;
-import guru.qa.niffler.jupiter.annotation.Category;
-import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
-import guru.qa.niffler.jupiter.annotation.Spending;
-import guru.qa.niffler.jupiter.annotation.User;
+import guru.qa.niffler.jupiter.annotation.*;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.model.rest.UserJson;
 import guru.qa.niffler.page.LoginPage;
@@ -28,12 +25,11 @@ public class SpendingWebTest {
       )
   )
   @Test
+  @ApiLogin
   void categoryDescriptionShouldBeChangedFromTable(UserJson user) {
     final String newDescription = "Обучение Niffler Next Generation";
 
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getSpendingTable()
         .editSpending("Обучение Advanced 2.0")
         .setNewSpendingDescription(newDescription)
@@ -45,15 +41,14 @@ public class SpendingWebTest {
 
   @User
   @Test
+  @ApiLogin
   void shouldAddNewSpending(UserJson user) {
     String category = "Friends";
     int amount = 100;
     Date currentDate = new Date();
     String description = RandomDataUtils.randomSentence(3);
 
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getHeader()
         .addSpendingPage()
         .setNewSpendingCategory(category)
@@ -69,10 +64,9 @@ public class SpendingWebTest {
 
   @User
   @Test
+  @ApiLogin
   void shouldNotAddSpendingWithEmptyCategory(UserJson user) {
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getHeader()
         .addSpendingPage()
         .setNewSpendingAmount(100)
@@ -83,10 +77,9 @@ public class SpendingWebTest {
 
   @User
   @Test
+  @ApiLogin
   void shouldNotAddSpendingWithEmptyAmount(UserJson user) {
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getHeader()
         .addSpendingPage()
         .setNewSpendingCategory("Friends")
@@ -103,10 +96,9 @@ public class SpendingWebTest {
       )
   )
   @Test
+  @ApiLogin
   void deleteSpendingTest(UserJson user) {
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getSpendingTable()
         .deleteSpending("Обучение Advanced 2.0")
         .checkTableSize(0);
@@ -121,10 +113,9 @@ public class SpendingWebTest {
       )
   )
   @ScreenShotTest("img/expected-stat.png")
+  @ApiLogin
   void checkStatComponentTest(UserJson user, BufferedImage expected) throws IOException {
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getStatComponent()
         .checkStatisticBubblesContains("Обучение 79990 ₽")
         .checkStatisticImage(expected)
@@ -156,10 +147,9 @@ public class SpendingWebTest {
       }
   )
   @ScreenShotTest(value = "img/expected-stat-archived.png")
+  @ApiLogin
   void statComponentShouldDisplayArchivedCategories(UserJson user, BufferedImage expected) throws IOException {
-    Selenide.open(LoginPage.URL, LoginPage.class)
-        .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage())
+    Selenide.open(MainPage.URL, MainPage.class)
         .getStatComponent()
         .checkStatisticBubblesContains("Поездки 9500 ₽", "Archived 3100 ₽")
         .checkStatisticImage(expected)
