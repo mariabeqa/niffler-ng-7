@@ -8,9 +8,14 @@ import guru.qa.niffler.jupiter.extension.ApiLoginExtension;
 import guru.qa.niffler.model.pageable.RestResponsePage;
 import guru.qa.niffler.model.rest.UserJson;
 import guru.qa.niffler.service.impl.GatewayV2ApiClient;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RestTest
 public class FriendsV2RestTest {
@@ -29,12 +34,33 @@ public class FriendsV2RestTest {
 
     final RestResponsePage<UserJson> response = gatewayApiClient.allFriends(token, 0, 2, null, null);
 
-    Assertions.assertEquals(2, response.getContent().size());
+    assertEquals(2, response.getContent().size());
 
     final UserJson actualInvitation = response.getContent().getFirst();
     final UserJson actualFriend = response.getContent().getLast();
 
-    Assertions.assertEquals(expectedFriend.id(), actualFriend.id());
-    Assertions.assertEquals(expectedInvitation.id(), actualInvitation.id());
+    assertEquals(expectedFriend.id(), actualFriend.id());
+    assertEquals(expectedInvitation.id(), actualInvitation.id());
+  }
+
+  @ApiLogin
+  @User(friends = 5)
+  @Test
+  void friendsAndIncomeInvitationsListShouldBeReturnedSorted(UserJson user, @Token String token) {
+    final RestResponsePage<UserJson> response = gatewayApiClient.allFriends(
+            token,
+            0,
+            5,
+            "username,DESC",
+            null);
+
+    List<String> actualUsernames = response.getContent().stream()
+            .map(UserJson::username)
+            .toList();
+
+    List<String> expectedUsernames = new ArrayList<>(actualUsernames);
+    expectedUsernames.sort(Comparator.reverseOrder());
+
+    assertEquals(expectedUsernames, actualUsernames);
   }
 }
