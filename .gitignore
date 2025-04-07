@@ -6,6 +6,7 @@ build
 !gradle/wrapper/gradle-wrapper.properties
 !**/src/main/**/build/
 !**/src/test/**/build/
+graphql
 
 ### STS ###
 .apt_generated
