@@ -1,5 +1,7 @@
 package guru.qa.niffler.data;
 
+import guru.qa.niffler.grpc.UserResponse;
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +18,7 @@ import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -125,5 +128,33 @@ public class UserEntity implements Serializable {
   @Override
   public final int hashCode() {
     return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+  }
+
+  public static @Nonnull UserResponse toUserResponse(UserEntity userEntity) {
+    return UserResponse.newBuilder()
+            .setId(userEntity.getId().toString())
+            .setUsername(userEntity.getUsername())
+            .setFirstname(userEntity.getFirstname() != null ? userEntity.getFirstname() : "")
+            .setSurname(userEntity.getSurname() != null ? userEntity.getSurname() : "")
+            .setFullname(userEntity.getFullname() != null ? userEntity.getFullname() : "")
+            .setCurrency(guru.qa.niffler.grpc.CurrencyValues.valueOf(userEntity.getCurrency().name()))
+            .setPhoto(userEntity.getPhoto() != null && userEntity.getPhoto().length > 0 ? new String(userEntity.getPhoto(), StandardCharsets.UTF_8) : "")
+            .setPhotoSmall(userEntity.getPhotoSmall() != null && userEntity.getPhotoSmall().length > 0 ? new String(userEntity.getPhotoSmall(), StandardCharsets.UTF_8) : "")
+            .setFriendshipStatus(guru.qa.niffler.grpc.FriendshipStatus.UNDEFINED)
+            .build();
+  }
+
+  public static @Nonnull UserResponse toUserResponse(UserEntity userEntity, guru.qa.niffler.grpc.FriendshipStatus friendshipStatus) {
+    return UserResponse.newBuilder()
+            .setId(userEntity.getId().toString())
+            .setUsername(userEntity.getUsername())
+            .setFirstname(userEntity.getFirstname() != null ? userEntity.getFirstname() : "")
+            .setSurname(userEntity.getSurname() != null ? userEntity.getSurname() : "")
+            .setFullname(userEntity.getFullname() != null ? userEntity.getFullname() : "")
+            .setCurrency(guru.qa.niffler.grpc.CurrencyValues.valueOf(userEntity.getCurrency().name()))
+            .setPhoto(userEntity.getPhoto() != null && userEntity.getPhoto().length > 0 ? new String(userEntity.getPhoto(), StandardCharsets.UTF_8) : "")
+            .setPhotoSmall(userEntity.getPhotoSmall() != null && userEntity.getPhotoSmall().length > 0 ? new String(userEntity.getPhotoSmall(), StandardCharsets.UTF_8) : "")
+            .setFriendshipStatus(friendshipStatus)
+            .build();
   }
 }
