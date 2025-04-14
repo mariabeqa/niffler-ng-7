@@ -33,7 +33,6 @@ buildscript {
 plugins {
     id 'io.qameta.allure' version '2.12.0'
     id 'io.qameta.allure-adapter' version '2.12.0'
-    id 'com.github.edeandrea.xjc-generation' version '1.6'
     id 'com.apollographql.apollo' version '4.1.0'
 }
 
@@ -45,17 +44,6 @@ allure {
     adapter {
         aspectjVersion.set("1.9.22")
         aspectjWeaver.set(true)
-    }
-}
-
-xjcGeneration {
-    defaultAdditionalXjcOptions = ['encoding': 'UTF-8']
-    schemas {
-        wsdlSchema {
-            schemaFile = 'userdata.wsdl'
-            javaPackageName = 'guru.qa.jaxb.userdata'
-            sourceSet = 'test'
-        }
     }
 }
 
@@ -75,12 +63,56 @@ apollo {
     }
 }
 
+configurations {
+    jaxb
+}
+
+tasks.register('genJaxb') {
+    ext.sourcesDir = layout.buildDirectory.dir("generated-sources/jaxb").get()
+    ext.classesDir = layout.buildDirectory.dir("classes/jaxb").get()
+    ext.schema = "${userdataWsdlUrl}"
+
+    outputs.dir classesDir
+
+    doLast() {
+        project.ant {
+            taskdef name: "xjc", classname: "com.sun.tools.xjc.XJCTask",
+                    classpath: configurations.jaxb.asPath
+            mkdir(dir: sourcesDir)
+            mkdir(dir: classesDir)
+
+            xjc(destdir: sourcesDir, schema: schema, package: "guru.qa.jaxb.userdata") {
+                arg(value: "-wsdl")
+                produces(dir: sourcesDir, includes: "**/*.java")
+            }
+
+            javac(destdir: classesDir, source: 21, target: 21, debug: true,
+                    debugLevel: "lines,vars,source",
+                    classpath: configurations.jaxb.asPath) {
+                src(path: sourcesDir)
+                include(name: "**/*.java")
+                include(name: "*.java")
+            }
+
+            copy(todir: classesDir) {
+                fileset(dir: sourcesDir, erroronmissingdir: false) {
+                    exclude(name: "**/*.java")
+                }
+            }
+        }
+    }
+}
+
+tasks.genJaxb.onlyIf {
+    !project.hasProperty("skipjaxb")
+}
+
+
 sourceSets {
-    test {
+    main {
         java {
-            srcDir('src/test/java')
-            srcDir("$buildDir/generated-sources/test/xjc")
-            srcDir("$buildDir/generated/source/apollo/niffler")
+            srcDir 'src/main/java'
+            srcDir 'build/generated-sources/jaxb'
         }
     }
 }
@@ -148,7 +180,9 @@ dependencies {
     // SOAP
     testImplementation "com.sun.xml.messaging.saaj:saaj-impl:${saajVersion}"
     testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:${jakartaJaxbVersion}"
-    xjc "org.glassfish.jaxb:jaxb-xjc:${project.ext.jakartaJaxbVersion}"
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:${jakartaJaxbVersion}"
+    implementation(files(genJaxb.classesDir).builtBy(genJaxb))
+    jaxb "org.glassfish.jaxb:jaxb-xjc:${jakartaJaxbVersion}"
     // Kafka
     testImplementation "org.apache.kafka:kafka-clients:${kafkaClientsVersion}"
     // Wiremock
