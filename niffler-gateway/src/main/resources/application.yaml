@@ -17,7 +17,7 @@ logging:
     org.springframework.boot.autoconfigure: INFO
 
 niffler-userdata:
-  client: rest
+  client: soap
 
 ---
 spring:
