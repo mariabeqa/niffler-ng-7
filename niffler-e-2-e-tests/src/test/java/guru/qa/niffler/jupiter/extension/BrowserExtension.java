@@ -26,13 +26,16 @@ public class BrowserExtension implements
     LifecycleMethodExecutionExceptionHandler {
 
   static {
-    Configuration.browser = "chrome";
+    boolean isFirefox = "firefox".equals(System.getProperty("browser"));
+
+    Configuration.browser = isFirefox ? "firefox" : "chrome";
     Configuration.timeout = 8000;
     Configuration.pageLoadStrategy = "eager";
     if ("docker".equals(System.getProperty("test.env"))) {
       Configuration.remote = "http://selenoid:4444/wd/hub";
-      Configuration.browserVersion = "127.0";
-      Configuration.browserCapabilities = new ChromeOptions().addArguments("--no-sandbox");
+      if (!isFirefox) {
+        Configuration.browserCapabilities = new ChromeOptions().addArguments("--no-sandbox");
+      }
     }
   }
 

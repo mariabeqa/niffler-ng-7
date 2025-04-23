@@ -3,6 +3,7 @@ package guru.qa.niffler.config;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 enum DockerConfig implements Config {
   INSTANCE;
@@ -65,5 +66,12 @@ enum DockerConfig implements Config {
   @Override
   public String currencyGrpcAddress() {
     return "currency.niffler.dc";
+  }
+
+  @Nonnull
+  @Override
+  public String allureDockerServiceUrl() {
+    String allureDockerApiUrl = System.getenv("ALLURE_DOCKER_API");
+    return Objects.requireNonNullElse(allureDockerApiUrl, "http://allure:5050/");
   }
 }
