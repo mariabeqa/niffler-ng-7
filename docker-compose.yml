@@ -183,6 +183,12 @@ services:
       - BUILD_URL=${BUILD_URL}
       - HEAD_COMMIT_MESSAGE=${HEAD_COMMIT_MESSAGE}
       - EXECUTION_TYPE=${EXECUTION_TYPE}
+      - BROWSER=${BROWSER}
+      - ALLURE_DOCKER_API=${ALLURE_DOCKER_API}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - BUILD_URL=${BUILD_URL}
+      - HEAD_COMMIT_MESSAGE=${HEAD_COMMIT_MESSAGE}
+      - EXECUTION_TYPE=${EXECUTION_TYPE}
     volumes:
       - allure-results:/niffler/niffler-e-2-e-tests/build/allure-results
     depends_on:
@@ -198,7 +204,7 @@ services:
     depends_on:
       - niffler-e-2-e
     environment:
-      - CHECK_RESULTS_EVERY_SECONDS=5
+      - CHECK_RESULTS_EVERY_SECONDS=NONE
       - KEEP_HISTORY=1
     ports:
       - 5050:5050
