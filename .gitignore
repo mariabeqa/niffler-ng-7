@@ -40,3 +40,5 @@ out/
 
 ### gRPC generated files ###
 /niffler-grpc-common/src/generated/**
+
+.DS_Store
