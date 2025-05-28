@@ -171,6 +171,19 @@ tasks.named { it == "generateNifflerApolloSources" }.configureEach {
     dependsOn("downloadNifflerApolloSchemaFromIntrospection")
 }
 
+tasks.register("dbEmpty", Test) {
+    useJUnitPlatform {
+        includeTags "EMPTY_DB"
+    }
+}
+
+tasks.register("dbFull", Test) {
+    useJUnitPlatform {
+        includeTags "FULL_DB"
+    }
+    shouldRunAfter(test)
+}
+
 test {
     dependsOn("generateNifflerApolloSources")
     options {
@@ -178,5 +191,8 @@ test {
     }
     testLogging.showStandardStreams = true
     testLogging.exceptionFormat = 'full'
-    useJUnitPlatform()
+    useJUnitPlatform{
+        excludeTags("EMPTY_DB", "FULL_DB")
+    }
+    shouldRunAfter("dbEmpty")
 }
